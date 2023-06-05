@@ -83,14 +83,14 @@ func Example() {
 	// person_priority = map[]
 	//
 	// Filled state:
-	// name_to_address = map[Alice K:93 Heath Rd John S:13 Nelson St]
-	// name_to_birthday = map[Alice K:2000-06-26 00:00:00 +0000 UTC John S:1972-01-27 00:00:00 +0000 UTC]
-	// person_priority = map[1:Alice K 2:John S]
+	// name_to_address = map[Alice K:93 Heath Rd, John S:13 Nelson St]
+	// name_to_birthday = map[Alice K:2000-06-26 00:00:00 +0000 UTC, John S:1972-01-27 00:00:00 +0000 UTC]
+	// person_priority = map[1:Alice K, 2:John S]
 	//
 	// Loaded state:
-	// name_to_address = map[Alice K:93 Heath Rd John S:13 Nelson St]
-	// name_to_birthday = map[Alice K:2000-06-26 00:00:00 +0000 UTC John S:1972-01-27 00:00:00 +0000 UTC]
-	// person_priority = map[1:Alice K 2:John S]
+	// name_to_address = map[Alice K:93 Heath Rd, John S:13 Nelson St]
+	// name_to_birthday = map[Alice K:2000-06-26 00:00:00 +0000 UTC, John S:1972-01-27 00:00:00 +0000 UTC]
+	// person_priority = map[1:Alice K, 2:John S]
 	//
 	// The address of Alice K is 93 Heath Rd
 }
@@ -180,7 +180,7 @@ func testMap[K comparable](t *testing.T, mtc mapTestCase[K]) {
 			}
 
 			if iter.I() < iter.Len()-1 {
-				b.WriteString(" ")
+				b.WriteString(", ")
 			}
 
 			if err = iter.Next(); err != nil {
@@ -196,7 +196,7 @@ func testMap[K comparable](t *testing.T, mtc mapTestCase[K]) {
 		}
 
 		t.Logf("ordered %s: %s", sig, str)
-		pairs := strings.Split(strings.TrimSuffix(strings.TrimPrefix(str, "map["), "]"), " ")
+		pairs := strings.Split(strings.TrimSuffix(strings.TrimPrefix(str, "map["), "]"), ", ")
 		slices.Order(mtc.keys)
 
 		for i, pair := range pairs {
@@ -316,6 +316,32 @@ func TestMap(t *testing.T) {
 
 	for _, c := range generateMapCases(*maxKeys, func(no int) []float64 {
 		return numbers.Range(1.0, float64(no), 1.0)
+	}) {
+		testMap(t, c)
+	}
+
+	type structure struct {
+		X int
+		Y float64
+		Z string
+	}
+
+	for _, c := range generateMapCases(*maxKeys, func(no int) []structure {
+		return slices.Comprehension(numbers.Range(0, no-1, 1), func(idx int, value int, arr []int) structure {
+			return structure{
+				X: value,
+				Y: float64(value + 1),
+				Z: fmt.Sprintf(pad, value+2),
+			}
+		})
+	}) {
+		testMap(t, c)
+	}
+
+	for _, c := range generateMapCases(*maxKeys, func(no int) [][3]int {
+		return slices.Comprehension(numbers.Range(0, no-1, 1), func(idx int, value int, arr []int) [3]int {
+			return [3]int{value, value + 1, value + 2}
+		})
 	}) {
 		testMap(t, c)
 	}

@@ -191,7 +191,7 @@ func (m *mapProto[K, V]) String(reader StateReader) (out string) {
 		}
 		b.WriteString(fmt.Sprintf("%v:%v", key, val))
 		if keyNo < len(keys)-1 {
-			b.WriteString(" ")
+			b.WriteString(", ")
 		}
 	}
 	return
